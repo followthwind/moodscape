@@ -1,12 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tflite/flutter_tflite.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:developer' as devtools;
+import 'package:hive/hive.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+
+  var box = await Hive.openBox('mybox');
+
   runApp(const MyApp());
 }
 
@@ -39,9 +43,33 @@ class _MyHomePageState extends State<MyHomePage> {
   File? filepathFace;
   String labelText = '';
   String labelFace = '';
-  // double confidence = 0.0;
   double textConfidence = 0.0;
   double faceConfidence = 0.0;
+  final _myBox = Hive.box('mybox');
+  String resultText = '';
+  String resultFace = '';
+
+  hasil() {
+    if (labelText == 'Steadiness') {
+      resultText =
+          'Steadiness merupakan tipe kepribadian yang merupakan pendengar yan baik, posesif, cenderung stabil, mau memahami dan juga bersahabat';
+    }
+    ;
+    Text(resultText);
+  }
+
+  // void writeData() {
+  //   _myBox.put(1, 'Mitch');
+  //   print(_myBox.get(1));
+  // }
+
+  // void readData() {
+  //   print(_myBox.get(1));
+  // }
+
+  // void deleteData() {
+  //   _myBox.delete(1);
+  // }
 
   Future<void> _textModel() async {
     String? res = await Tflite.loadModel(
@@ -160,6 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
     await _textModel();
     var imageMap = File(image.path);
 
+    hasil();
+
     setState(() {
       filepathText = imageMap;
     });
@@ -220,52 +250,28 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // pickTextImageCamera() async {
-  //   final ImagePicker picker = ImagePicker();
-  //   final XFile? image = await picker.pickImage(source: ImageSource.camera);
-
-  //   if (image == null) return;
-
-  //   var imageMap = File(image.path);
-
-  //   setState(() {
-  //     filepath = imageMap;
-  //   });
-
-  //   var recognitions = await Tflite.runModelOnImage(
-  //       path: image.path, // required
-  //       imageMean: 0.0, // defaults to 117.0
-  //       imageStd: 255.0, // defaults to 1.0
-  //       numResults: 2, // defaults to 5
-  //       threshold: 0.2, // defaults to 0.1
-  //       asynch: true // defaults to true
-  //       );
-
-  //   if (recognitions == null) {
-  //     print("recognitions is null");
-  //     devtools.log("recognitions is null");
-  //     return;
-  //   }
-  //   print(recognitions);
-  //   devtools.log(recognitions.toString());
-  //   setState(() {
-  //     confidence = (recognitions[0]['confidence'] * 100);
-  //     label = recognitions[0]['label'].toString();
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("deteksi tulisan"),
+        title: const Text(
+          "moodScape",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2, // Optional: Add some letter spacing
+            color: Colors.white, // Text color
+          ),
+        ),
+        centerTitle: true, // Center the title
+        backgroundColor: const Color(0xFFFFC0CB), // Soft pink color
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
               const SizedBox(
-                height: 12,
+                height: 24,
               ),
               Card(
                 elevation: 20,
@@ -278,19 +284,28 @@ class _MyHomePageState extends State<MyHomePage> {
                         const SizedBox(
                           height: 18,
                         ),
+                        const Text(
+                          "Deteksi Tulisan",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(
+                          height: 18,
+                        ),
                         Container(
-                            height: 290,
-                            width: 280,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              image: const DecorationImage(
-                                image: AssetImage('assets/foto.jpg'),
-                              ),
+                          height: 200,
+                          width: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            image: const DecorationImage(
+                              image: AssetImage('assets/foto.jpg'),
                             ),
-                            child: filepathText == null
-                                ? const Text("")
-                                : Image.file(filepathText!, fit: BoxFit.fill)),
+                          ),
+                          child: filepathText == null
+                              ? const Text("")
+                              : Image.file(filepathText!, fit: BoxFit.fill),
+                        ),
                         const SizedBox(
                           height: 12,
                         ),
@@ -309,7 +324,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 height: 12,
                               ),
                               Text(
-                                "The Accuracy is ${textConfidence.toStringAsFixed(0)}%",
+                                "${textConfidence.toStringAsFixed(0)}%",
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -329,37 +344,90 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(
                 height: 12,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  pickTextImageCamera();
-                },
-                style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SizedBox(
+                      width: 150, // Set a fixed width for the buttons
+                      child: ElevatedButton(
+                        onPressed: () {
+                          pickTextImageCamera();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          backgroundColor:
+                              Colors.grey[200], // Neutral background color
+                          foregroundColor: Colors.black, // Neutral text color
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.camera_alt,
+                                size: 24,
+                                color: Colors.black), // Neutral icon color
+                            SizedBox(height: 5), // Space between icon and text
+                            Text(
+                              "Take a Photo",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    foregroundColor: Colors.black),
-                child: const Text("Take a Photo"),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SizedBox(
+                      width: 150, // Set a fixed width for the buttons
+                      child: ElevatedButton(
+                        onPressed: () {
+                          pickTextImageGallery();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          backgroundColor:
+                              Colors.grey[200], // Neutral background color
+                          foregroundColor: Colors.black, // Neutral text color
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.photo_library,
+                                size: 24,
+                                color: Colors.black), // Neutral icon color
+                            SizedBox(height: 5), // Space between icon and text
+                            Text(
+                              "Pick from Gallery",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(
-                height: 8,
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  pickTextImageGallery();
-                },
-                style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    foregroundColor: Colors.black),
-                child: const Text("Pick from Gallery"),
+                height: 24,
               ),
               const SizedBox(
-                height: 12,
+                height: 24,
               ),
               Card(
                 elevation: 20,
@@ -372,9 +440,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         const SizedBox(
                           height: 18,
                         ),
+                        const Text(
+                          "Deteksi Emosi",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(
+                          height: 18,
+                        ),
                         Container(
-                            height: 290,
-                            width: 280,
+                            height: 200,
+                            width: 200,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
@@ -403,7 +479,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 height: 12,
                               ),
                               Text(
-                                "The Accuracy is ${faceConfidence.toStringAsFixed(0)}%",
+                                "${faceConfidence.toStringAsFixed(0)}%",
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -423,35 +499,134 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(
                 height: 12,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  pickFaceImageCamera();
-                },
-                style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SizedBox(
+                      width: 150, // Set a fixed width for the buttons
+                      child: ElevatedButton(
+                        onPressed: () {
+                          pickFaceImageCamera();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          backgroundColor:
+                              Colors.grey[200], // Neutral background color
+                          foregroundColor: Colors.black, // Neutral text color
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.camera_alt,
+                                size: 24,
+                                color: Colors.black), // Neutral icon color
+                            SizedBox(height: 5), // Space between icon and text
+                            Text(
+                              "Take a Photo",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    foregroundColor: Colors.black),
-                child: const Text("Take a Photo"),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SizedBox(
+                      width: 150, // Set a fixed width for the buttons
+                      child: ElevatedButton(
+                        onPressed: () {
+                          pickFaceImageGallery();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          backgroundColor:
+                              Colors.grey[200], // Neutral background color
+                          foregroundColor: Colors.black, // Neutral text color
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.photo_library,
+                                size: 24,
+                                color: Colors.black), // Neutral icon color
+                            SizedBox(height: 5), // Space between icon and text
+                            Text(
+                              "Pick from Gallery",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(
-                height: 8,
+                height: 48,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  pickFaceImageGallery();
-                },
-                style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    foregroundColor: Colors.black),
-                child: const Text("Pick from Gallery"),
-              )
+
+              Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Result",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        resultText,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // MaterialButton(
+              //   onPressed: writeData,
+              //   child: Text('Write'),
+              //   color: Colors.blue,
+              // ),
+              // MaterialButton(
+              //   onPressed: readData,
+              //   child: Text('Read'),
+              //   color: Colors.blue,
+              // ),
+              // MaterialButton(
+              //   onPressed: deleteData,
+              //   child: Text('Delete'),
+              //   color: Colors.blue,
+              // )
             ],
           ),
         ),

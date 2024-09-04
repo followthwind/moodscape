@@ -1,16 +1,8 @@
 # moodscape
 
-A new Flutter project.
+Aplikasi Flutter Moodscape, pendeteksi emosi menggunakan AI melalui graphology dan face recognition
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+![Untitled (2)](https://github.com/user-attachments/assets/5b1d8384-939d-4060-a95e-cecf03fe1953)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

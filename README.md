@@ -8,4 +8,7 @@ Aplikasi Flutter Moodscape, pendeteksi emosi menggunakan AI melalui graphology d
 
 
 
-[![Video Title](https://youtu.be/1N0pPAlc7_0/0.jpg)](https://youtu.be/1N0pPAlc7_0)
+<video width="600" controls>
+  <source src="videoplayback.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>

@@ -8,4 +8,4 @@ Aplikasi Flutter Moodscape, pendeteksi emosi menggunakan AI melalui graphology d
 
 
 
-![Untitled (2)](https://github.com/followthwind/moodscape/moodScapeDemo)
+![moodScapeDemo](https://github.com/user-attachments/assets/d70b35b4-f032-4a0a-86a4-832d5c7c41a7)

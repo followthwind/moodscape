@@ -62,12 +62,5 @@ Storage (to pick images from gallery)
 MIT License
 
 
-## 📦 Installation (Development)
-
-```bash
-git clone https://github.com/yourusername/moodscape.git
-cd moodscape
-flutter pub get
-flutter run
 
 
